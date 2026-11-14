@@ -76,3 +76,147 @@
   .site-header.is-compact .menu-toggle{padding:7px}
   .main-nav{top:100%}
 }
+
+
+/* Ajustes de largura e compatibilidade para Safari/iPhone. */
+html {
+  width: 100%;
+  max-width: 100%;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  overflow-x: clip;
+}
+
+@supports not (overflow: clip) {
+  html { overflow-x: hidden; }
+}
+
+body {
+  width: 100%;
+  max-width: 100%;
+  overflow-wrap: break-word;
+}
+
+.site-header {
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.section-wrap {
+  width: calc(100% - 48px);
+  max-width: 1180px;
+}
+
+/* A elipse decorativa não deve ultrapassar a largura útil da página. */
+.orbit-one {
+  width: 100%;
+  left: 0;
+}
+
+.hero-copy,
+.hero-visual,
+.about-content > *,
+.service-grid > *,
+.plan-grid > *,
+.photoshoot-inner > *,
+.contact-inner > *,
+.payment-options > * {
+  min-width: 0;
+}
+
+.contact-detail a {
+  overflow-wrap: anywhere;
+}
+
+.portfolio-filter,
+.portfolio-item,
+.gallery-image,
+.menu-toggle {
+  -webkit-appearance: none;
+  appearance: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.lightbox {
+  min-height: 100vh;
+  min-height: 100dvh;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 850px) and (min-width: 741px) {
+  .site-header { padding-inline: 24px; }
+  .brand { width: clamp(180px, 26vw, 220px); }
+  .main-nav { gap: clamp(10px, 1.5vw, 14px); font-size: 9px; }
+  .nav-cta { padding: 9px 11px; }
+  .nav-cta span { margin-left: 6px; }
+}
+
+@media (max-width: 740px) {
+  .section-wrap {
+    width: calc(100% - 38px);
+    max-width: 500px;
+  }
+
+  .site-header {
+    padding-left: calc(20px + env(safe-area-inset-left, 0px));
+    padding-right: calc(20px + env(safe-area-inset-right, 0px));
+  }
+
+  .main-nav {
+    padding-left: calc(22px + env(safe-area-inset-left, 0px));
+    padding-right: calc(22px + env(safe-area-inset-right, 0px));
+  }
+
+  .hero {
+    min-width: 0;
+  }
+
+  .plans-subheading {
+    min-width: 0;
+  }
+
+  .plans-subheading small {
+    flex: 0 1 auto;
+    text-align: right;
+    letter-spacing: .08em;
+  }
+
+  .intro-band-words {
+    min-width: 0;
+  }
+
+  .payment-options {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .lightbox {
+    padding-top: calc(14px + env(safe-area-inset-top, 0px));
+    padding-right: calc(14px + env(safe-area-inset-right, 0px));
+    padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+    padding-left: calc(14px + env(safe-area-inset-left, 0px));
+  }
+
+  .lightbox img,
+  .lightbox video {
+    max-width: 100%;
+    max-height: 82vh;
+    max-height: 82dvh;
+  }
+}
+
+/* Fallback para versões antigas do Safari sem suporte a aspect-ratio. */
+@supports not (aspect-ratio: 1 / 1) {
+  .portfolio-item {
+    box-sizing: content-box;
+    height: 0;
+    padding-bottom: 100%;
+  }
+  .portfolio-item img,
+  .portfolio-item-caption,
+  .portfolio-video:after,
+  .video-play,
+  .video-tag {
+    position: absolute;
+  }
+}

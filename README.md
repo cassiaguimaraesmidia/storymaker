@@ -16,3 +16,7 @@ Os cinco vídeos foram convertidos para MP4/H.264. O vídeo de aniversário, ori
 
 ## Publicação
 Envie a pasta completa `Cassia-Guimaraes-Site` para a hospedagem, mantendo a estrutura de diretórios. Não renomeie nem mova os arquivos dentro de `assets/`.
+
+## Compatibilidade móvel
+
+A versão inclui ajustes de largura para evitar rolagem horizontal involuntária, áreas seguras do iPhone, correções de rolagem do visualizador de mídia no Safari e alternativas para recursos CSS em navegadores móveis mais antigos.

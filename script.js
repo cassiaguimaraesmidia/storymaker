@@ -1,119 +1,207 @@
+/* Interações do site — compatível com Safari/iOS e navegadores modernos. */
 document.documentElement.classList.add('js');
 
-const menuToggle = document.querySelector('.menu-toggle');
-const nav = document.querySelector('.main-nav');
-menuToggle?.addEventListener('click', () => {
-  const open = nav.classList.toggle('open');
-  menuToggle.setAttribute('aria-expanded', String(open));
-  menuToggle.setAttribute('aria-label', open ? 'Fechar menu' : 'Abrir menu');
-});
-nav?.querySelectorAll('a').forEach(link => link.addEventListener('click', () => {
-  nav.classList.remove('open');
-  menuToggle?.setAttribute('aria-expanded', 'false');
-}));
+var menuToggle = document.querySelector('.menu-toggle');
+var nav = document.querySelector('.main-nav');
 
-const year = document.querySelector('#year');
+if (menuToggle && nav) {
+  menuToggle.addEventListener('click', function () {
+    var open = nav.classList.toggle('open');
+    menuToggle.setAttribute('aria-expanded', String(open));
+    menuToggle.setAttribute('aria-label', open ? 'Fechar menu' : 'Abrir menu');
+  });
+
+  Array.prototype.forEach.call(nav.querySelectorAll('a'), function (link) {
+    link.addEventListener('click', function () {
+      nav.classList.remove('open');
+      menuToggle.setAttribute('aria-expanded', 'false');
+      menuToggle.setAttribute('aria-label', 'Abrir menu');
+    });
+  });
+}
+
+var year = document.querySelector('#year');
 if (year) year.textContent = new Date().getFullYear();
 
-if ('IntersectionObserver' in window) {
-  const observer = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
+// Revela os elementos conforme entram na tela. Em navegadores sem suporte,
+// mantém todo o conteúdo visível em vez de deixá-lo oculto.
+if (typeof window.IntersectionObserver === 'function') {
+  var revealObserver = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
       if (entry.isIntersecting) {
         entry.target.classList.add('visible');
-        observer.unobserve(entry.target);
+        revealObserver.unobserve(entry.target);
       }
     });
   }, { threshold: 0.12 });
-  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  Array.prototype.forEach.call(document.querySelectorAll('.reveal'), function (element) {
+    revealObserver.observe(element);
+  });
 } else {
-  document.querySelectorAll('.reveal').forEach(el => el.classList.add('visible'));
+  Array.prototype.forEach.call(document.querySelectorAll('.reveal'), function (element) {
+    element.classList.add('visible');
+  });
 }
 
-// Portfolio category filters.
-const filterButtons = [...document.querySelectorAll('[data-filter]')];
-const portfolioItems = [...document.querySelectorAll('.portfolio-item[data-category]')];
-const portfolioCount = document.querySelector('#portfolio-count');
-filterButtons.forEach(button => button.addEventListener('click', () => {
-  const selected = button.dataset.filter;
-  filterButtons.forEach(item => {
-    const active = item === button;
-    item.classList.toggle('is-active', active);
-    item.setAttribute('aria-pressed', String(active));
-  });
-  portfolioItems.forEach(item => { item.hidden = item.dataset.category !== selected; });
-  if (portfolioCount) portfolioCount.textContent = button.dataset.count || String(portfolioItems.filter(item => item.dataset.category === selected).length);
-}));
+// Filtros das quatro categorias do portfólio.
+var filterButtons = Array.prototype.slice.call(document.querySelectorAll('[data-filter]'));
+var portfolioItems = Array.prototype.slice.call(document.querySelectorAll('.portfolio-item[data-category]'));
+var portfolioCount = document.querySelector('#portfolio-count');
 
-// Shared lightbox. Video files are assigned only after the visitor selects a video preview.
-const lightbox = document.querySelector('#lightbox');
-const lightboxImage = document.querySelector('#lightbox-image');
-const lightboxVideo = document.querySelector('#lightbox-video');
-const closeButton = lightbox?.querySelector('.lightbox-close');
-const videoFallback = document.querySelector('#video-fallback');
-const videoOpenFile = document.querySelector('#video-open-file');
-let lastTrigger = null;
-const closeLightbox = () => {
+filterButtons.forEach(function (button) {
+  button.addEventListener('click', function () {
+    var selected = button.dataset.filter;
+    filterButtons.forEach(function (item) {
+      var active = item === button;
+      item.classList.toggle('is-active', active);
+      item.setAttribute('aria-pressed', String(active));
+    });
+    portfolioItems.forEach(function (item) {
+      item.hidden = item.dataset.category !== selected;
+    });
+    if (portfolioCount) {
+      portfolioCount.textContent = button.dataset.count || String(
+        portfolioItems.filter(function (item) { return item.dataset.category === selected; }).length
+      );
+    }
+  });
+});
+
+// Visualizador de fotos e vídeos. O bloqueio de rolagem também preserva
+// a posição da página no Safari do iPhone.
+var lightbox = document.querySelector('#lightbox');
+var lightboxImage = document.querySelector('#lightbox-image');
+var lightboxVideo = document.querySelector('#lightbox-video');
+var closeButton = lightbox ? lightbox.querySelector('.lightbox-close') : null;
+var videoFallback = document.querySelector('#video-fallback');
+var videoOpenFile = document.querySelector('#video-open-file');
+var lastTrigger = null;
+var savedScrollY = 0;
+var bodyWasLocked = false;
+
+function lockPageScroll() {
+  if (bodyWasLocked) return;
+  savedScrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
+  document.body.style.position = 'fixed';
+  document.body.style.top = '-' + savedScrollY + 'px';
+  document.body.style.left = '0';
+  document.body.style.right = '0';
+  document.body.style.width = '100%';
+  document.body.style.overflow = 'hidden';
+  bodyWasLocked = true;
+}
+
+function unlockPageScroll() {
+  if (!bodyWasLocked) return;
+  document.body.style.position = '';
+  document.body.style.top = '';
+  document.body.style.left = '';
+  document.body.style.right = '';
+  document.body.style.width = '';
+  document.body.style.overflow = '';
+  bodyWasLocked = false;
+  window.scrollTo(0, savedScrollY);
+}
+
+function closeLightbox() {
   if (!lightbox) return;
+
   if (lightboxVideo) {
     lightboxVideo.pause();
     lightboxVideo.removeAttribute('src');
     lightboxVideo.removeAttribute('poster');
     lightboxVideo.load();
-    if (videoFallback) videoFallback.hidden = true;
     lightboxVideo.hidden = true;
   }
+  if (videoFallback) videoFallback.hidden = true;
+
   if (lightboxImage) {
     lightboxImage.removeAttribute('src');
     lightboxImage.hidden = true;
   }
+
   lightbox.classList.remove('open');
   lightbox.setAttribute('aria-hidden', 'true');
-  document.body.style.overflow = '';
-  lastTrigger?.focus?.();
-};
-const openLightbox = trigger => {
+  unlockPageScroll();
+
+  if (lastTrigger && typeof lastTrigger.focus === 'function') {
+    lastTrigger.focus();
+  }
+}
+
+function openLightbox(trigger) {
   if (!lightbox) return;
   lastTrigger = trigger;
+
   if (trigger.dataset.mediaType === 'video' && lightboxVideo) {
     if (lightboxImage) lightboxImage.hidden = true;
     lightboxVideo.hidden = false;
-    if (videoFallback) videoFallback.hidden = false;
-    if (videoOpenFile) videoOpenFile.href = trigger.dataset.videoSrc;
     if (videoFallback) videoFallback.hidden = true;
+    if (videoOpenFile) videoOpenFile.href = trigger.dataset.videoSrc;
+
     lightboxVideo.poster = trigger.dataset.videoPoster || '';
     lightboxVideo.src = trigger.dataset.videoSrc;
     lightboxVideo.load();
     lightbox.classList.add('open');
     lightbox.setAttribute('aria-hidden', 'false');
-    document.body.style.overflow = 'hidden';
-    closeButton?.focus();
-    const playRequest = lightboxVideo.play();
-    if (playRequest?.catch) playRequest.catch(() => {});
+    lockPageScroll();
+
+    if (closeButton) closeButton.focus();
+    var playRequest;
+    try {
+      playRequest = lightboxVideo.play();
+    } catch (error) {
+      if (videoFallback) videoFallback.hidden = false;
+    }
+    if (playRequest && typeof playRequest.catch === 'function') {
+      playRequest.catch(function () {
+        if (videoFallback) videoFallback.hidden = false;
+      });
+    }
   } else if (trigger.dataset.full && lightboxImage) {
     if (lightboxVideo) lightboxVideo.hidden = true;
     lightboxImage.src = trigger.dataset.full;
     lightboxImage.hidden = false;
     lightbox.classList.add('open');
     lightbox.setAttribute('aria-hidden', 'false');
-    document.body.style.overflow = 'hidden';
-    closeButton?.focus();
+    lockPageScroll();
+    if (closeButton) closeButton.focus();
   }
-};
-document.querySelectorAll('[data-full], [data-video-src]').forEach(button => {
-  button.addEventListener('click', () => openLightbox(button));
-});
-closeButton?.addEventListener('click', closeLightbox);
-lightboxVideo?.addEventListener('error', () => {
-  if (videoFallback) videoFallback.hidden = false;
-  if (videoOpenFile && lightboxVideo.currentSrc) videoOpenFile.href = lightboxVideo.currentSrc;
-});
-lightbox?.addEventListener('click', event => { if (event.target === lightbox) closeLightbox(); });
-document.addEventListener('keydown', event => { if (event.key === 'Escape' && lightbox?.classList.contains('open')) closeLightbox(); });
+}
 
-// Compacta o cabeçalho durante a rolagem e restaura o tamanho no topo.
-const siteHeader = document.querySelector('.site-header');
-const updateHeaderSize = () => {
-  siteHeader?.classList.toggle('is-compact', window.scrollY > 24);
-};
+Array.prototype.forEach.call(document.querySelectorAll('[data-full], [data-video-src]'), function (button) {
+  button.addEventListener('click', function () { openLightbox(button); });
+});
+
+if (closeButton) closeButton.addEventListener('click', closeLightbox);
+
+if (lightboxVideo) {
+  lightboxVideo.addEventListener('error', function () {
+    if (videoFallback) videoFallback.hidden = false;
+    if (videoOpenFile && lightboxVideo.currentSrc) videoOpenFile.href = lightboxVideo.currentSrc;
+  });
+}
+
+if (lightbox) {
+  lightbox.addEventListener('click', function (event) {
+    if (event.target === lightbox) closeLightbox();
+  });
+}
+
+document.addEventListener('keydown', function (event) {
+  if (event.key === 'Escape' && lightbox && lightbox.classList.contains('open')) {
+    closeLightbox();
+  }
+});
+
+// Cabeçalho compacto durante a rolagem e restaurado no topo.
+var siteHeader = document.querySelector('.site-header');
+function updateHeaderSize() {
+  if (siteHeader) {
+    var scrollPosition = window.pageYOffset || document.documentElement.scrollTop || 0;
+    siteHeader.classList.toggle('is-compact', scrollPosition > 24);
+  }
+}
 updateHeaderSize();
 window.addEventListener('scroll', updateHeaderSize, { passive: true });
